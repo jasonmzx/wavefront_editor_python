@@ -2,10 +2,10 @@ import pywavefront
 import numpy as np
 
 class Chunk:
-    def __init__(self, faces):
+    def __init__(self, faces, centre_point=[None, None, None]):
         #self.vertices = vertices
         self.faces = faces
-        self.centre_point = [None, None, None]
+        self.centre_point = centre_point
 
     def __str__(self):
         return "Faces: " + str(self.faces) + "\nCentre Point: " + str(self.centre_point)
@@ -32,10 +32,10 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
 
     chunks = [] # List of Chunk objects
 
-    # Sorting by X then Z assures rendering consistency, just X is still a mess
+    #* Sorting by X then Z assures rendering consistency, just X is still a mess
 
-    sorted_faces_by_x = sorted(faces, key=lambda face: verts[face[0]][0]) # X sort
-    sorted_faces_rows = sorted(sorted_faces_by_x, key=lambda face: verts[face[0]][2]) # Z sort
+    sorted_faces_by_x = sorted(faces, key=lambda face: verts[face[0]][0]) # Sort faces by their X values
+    sorted_faces_rows = sorted(sorted_faces_by_x, key=lambda face: verts[face[0]][2]) # Sort faces by their Z values
 
     # Find X and Z Dimensions of the model
 
@@ -76,8 +76,11 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
 
     Z_chunks_face_subsets = []
 
+    Z_chunk_midpoints = []
+
     for i in range(len(chunk_boundaries_Z)-1):
         Z_chunks_face_subsets.append([])
+        Z_chunk_midpoints.append(None)
 
 
     for face in sorted_faces_rows:
@@ -86,22 +89,36 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
 
         # Parition faces into correct Z chunks
         for i in range(len(chunk_boundaries_Z)-1):
-            if v0[2] > chunk_boundaries_Z[i] and v0[2] < chunk_boundaries_Z[i+1]:
+            if v0[2] > chunk_boundaries_Z[i] and v0[2] < chunk_boundaries_Z[i+1]: # Lower < v0 < Upper
+                
+                # TODO: if this is slow, find a way to not reset midpoint for every face
+                Z_chunk_midpoints[i] = (chunk_boundaries_Z[i] + chunk_boundaries_Z[i+1]) / 2 
+
                 Z_chunks_face_subsets[i].append(face)
                 break
     
+    #print("Z Chunk Midpoints: ", Z_chunk_midpoints)
+
     # *------------- X Partitioning over Z -------------
 
-    for faces_subset in Z_chunks_face_subsets:
+    for i in range(len(Z_chunks_face_subsets)):
+        
+        faces_subset = Z_chunks_face_subsets[i]
+
         if len(faces_subset) == 0:
             continue
 
+        Z_midpoint = Z_chunk_midpoints[i]
+
         x_chunks_face_lists = []
+
+        X_chunks_midpoints = []
 
         # Initialize lists to store faces for each chunk
 
         for i in range(len(chunk_boundaries_X)-1):
             x_chunks_face_lists.append([])
+            X_chunks_midpoints.append(None)
 
         for face in faces_subset:
 
@@ -110,16 +127,23 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
             # Match v0 to a range and put it into appropriate chunk
 
             for i in range(len(chunk_boundaries_X)-1):
-                if v0[0] > chunk_boundaries_X[i] and v0[0] < chunk_boundaries_X[i+1]: # Is In between
+                
+                if v0[0] > chunk_boundaries_X[i] and v0[0] < chunk_boundaries_X[i+1]:  # Lower < v0 < Upper
+
+                    #TODO: if this is slow, find a way to not reset midpoint for every face
+                    X_chunks_midpoints[i] = (chunk_boundaries_X[i] + chunk_boundaries_X[i+1]) / 2
+
                     x_chunks_face_lists[i].append(face)
                     break
 
-        for XZ_chunk_subset in x_chunks_face_lists:
-            
+
+        for XZ_chunk_subset, X_midpoint in zip(x_chunks_face_lists, X_chunks_midpoints):
             if len(XZ_chunk_subset) == 0:
                 continue
+                
+            centre_point = [X_midpoint, 0, Z_midpoint]
 
-            chunk = Chunk(XZ_chunk_subset)
+            chunk = Chunk(XZ_chunk_subset, centre_point)
             chunks.append(chunk)
 
     return chunks, verts
