@@ -1,3 +1,5 @@
 Map_Venv
 .pyc
 __pycache__
+
+*.txt

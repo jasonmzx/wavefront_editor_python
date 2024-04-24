@@ -53,14 +53,14 @@ def load_chunks_into_pv(chunks, verts):
 
 chunks, verts = obj_chunker.get_XZ_chunked_mesh("objects/Landscape01.obj", 5)
 
-file_builder.serialize_chunk_map_to_file(chunks, "chunk_map.txt")
+file_builder.serialize_chunk_map_to_file(chunks, verts, "chunk_map.txt")
 
 load_chunks_into_pv(chunks, verts)
 
 
-# Monotilhic Mesh
+#* -- Monotilhic Mesh (No Chunks at all) 
 
-# verts, faces = obj_chunker.get_monolithic_mesh("objects/XZ.obj")
+# verts, faces = obj_chunker.get_monolithic_mesh("objects/Landscape01.obj")
 
 # vertices_array = np.array(verts)
 

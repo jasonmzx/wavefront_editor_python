@@ -20,6 +20,19 @@ def get_monolithic_mesh(filepath: str):
     verts = scene.vertices
     faces = scene.mesh_list[0].faces
 
+    for face in faces:
+        print(face)
+    
+        # Print first 10 faces
+    for face in faces[:10]:
+        print("Face Vertices: ", verts[face[0]], verts[face[1]], verts[face[2]])
+    
+    # print first 10 vertices
+    for vert in verts[:10]:
+        print("Vertex: ", vert)
+
+    print("Number of Vertices: ", len(verts))
+
     return verts, faces    
 
 
@@ -142,6 +155,8 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
                 continue
                 
             centre_point = [X_midpoint, 0, Z_midpoint]
+
+            # Pretty print XZ chunk subset (one entry per line)
 
             chunk = Chunk(XZ_chunk_subset, centre_point)
             chunks.append(chunk)
