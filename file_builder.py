@@ -62,5 +62,24 @@ def serialize_chunk_map_to_file(chunks : list, vertices : list, filepath : str):
                 file.write(FACE_STR + "\n")
 
 
+# Triangles is a List of List of 3 vertices (each vertex is a tuple of 3 floats)
+
+def build_full_chunk_map(chunks: list, filepath: str):
+    with open(filepath, "w") as file:
+
+        for chunk in chunks:
+            
+            CENTRE_POINT_STR = str(chunk.centre_point)
+            
+            # Remove left and right square brackets
+            CENTRE_POINT_STR = "# "+ CENTRE_POINT_STR[1:-1]
+            file.write(CENTRE_POINT_STR + "\n")
+
+            for triangle in chunk.triangles:
+
+                TRIANGLE_STR = str(triangle)
+                TRIANGLE_STR = TRIANGLE_STR[1:-1]
+                file.write(TRIANGLE_STR + "\n")
+
 def reindex_lookup():
     pass

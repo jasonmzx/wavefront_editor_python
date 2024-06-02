@@ -2,9 +2,10 @@ import pywavefront
 import numpy as np
 
 class Chunk:
-    def __init__(self, faces, centre_point=[None, None, None]):
+    def __init__(self, faces, triangles, centre_point=[None, None, None]):
         #self.vertices = vertices
         self.faces = faces
+        self.triangles = triangles
         self.centre_point = centre_point
 
     def __str__(self):
@@ -48,7 +49,7 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
     #* Sorting by X then Z assures rendering consistency, just X is still a mess
 
     sorted_faces_by_x = sorted(faces, key=lambda face: verts[face[0]][0]) # Sort faces by their X values
-    sorted_faces_rows = sorted(sorted_faces_by_x, key=lambda face: verts[face[0]][2]) # Sort faces by their Z values
+    sorted_faces_by_xz = sorted(sorted_faces_by_x, key=lambda face: verts[face[0]][2]) # Sort faces by their Z values
 
     # Find X and Z Dimensions of the model
 
@@ -96,7 +97,7 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
         Z_chunk_midpoints.append(None)
 
 
-    for face in sorted_faces_rows:
+    for face in sorted_faces_by_xz:
         # Get Face vertices
         v0 = verts[face[0]] # Vertex 1
 
@@ -125,12 +126,17 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
 
         x_chunks_face_lists = []
 
+        x_chunks_triangles = []
+
         X_chunks_midpoints = []
 
         # Initialize lists to store faces for each chunk
 
         for i in range(len(chunk_boundaries_X)-1):
+            
             x_chunks_face_lists.append([])
+            x_chunks_triangles.append([])
+
             X_chunks_midpoints.append(None)
 
         for face in faces_subset:
@@ -147,18 +153,18 @@ def get_XZ_chunked_mesh(filepath: str, N_CHUNKS: int):
                     X_chunks_midpoints[i] = (chunk_boundaries_X[i] + chunk_boundaries_X[i+1]) / 2
 
                     x_chunks_face_lists[i].append(face)
+                    x_chunks_triangles[i].append( (verts[face[0]], verts[face[1]], verts[face[2]]) )
+                    
                     break
 
 
-        for XZ_chunk_subset, X_midpoint in zip(x_chunks_face_lists, X_chunks_midpoints):
+        for XZ_chunk_subset, XZ_chunk_triangles, X_midpoint in zip(x_chunks_face_lists, x_chunks_triangles, X_chunks_midpoints):
             if len(XZ_chunk_subset) == 0:
                 continue
                 
-            centre_point = [X_midpoint, 0, Z_midpoint]
+            centre_point = [X_midpoint, 0, Z_midpoint] # Z Midpoint per iteration is pre-determined by Z partitioning
 
-            # Pretty print XZ chunk subset (one entry per line)
-
-            chunk = Chunk(XZ_chunk_subset, centre_point)
+            chunk = Chunk(XZ_chunk_subset, XZ_chunk_triangles, centre_point)
             chunks.append(chunk)
 
     return chunks, verts
