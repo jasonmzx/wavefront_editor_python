@@ -3,3 +3,5 @@ Map_Venv
 __pycache__
 
 *.txt
+*.obj
+*.mtl

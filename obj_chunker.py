@@ -21,6 +21,10 @@ def get_monolithic_mesh(filepath: str):
     verts = scene.vertices
     faces = scene.mesh_list[0].faces
 
+    for face_grp in scene.mesh_list[1:]:        
+        faces.extend(face_grp.faces)
+
+
     for face in faces:
         print(face)
     

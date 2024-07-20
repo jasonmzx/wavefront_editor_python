@@ -62,24 +62,65 @@ def serialize_chunk_map_to_file(chunks : list, vertices : list, filepath : str):
                 file.write(FACE_STR + "\n")
 
 
+
+
+def generate_prefixed_zeros_str(num_zeros: int, num: int):
+    num_str = str(num)
+    num_zeros_str = "0" * (num_zeros - len(num_str))
+    return num_zeros_str + num_str
+
 # Triangles is a List of List of 3 vertices (each vertex is a tuple of 3 floats)
 
 def build_full_chunk_map(chunks: list, filepath: str):
+    # Set to keep track of unique triangle strings
+    unique_triangles = set()
+
     with open(filepath, "w") as file:
 
         for chunk in chunks:
-            
             CENTRE_POINT_STR = str(chunk.centre_point)
             
             # Remove left and right square brackets
-            CENTRE_POINT_STR = "# "+ CENTRE_POINT_STR[1:-1]
+            CENTRE_POINT_STR = "# " + CENTRE_POINT_STR[1:-1]
             file.write(CENTRE_POINT_STR + "\n")
 
             for triangle in chunk.triangles:
-
                 TRIANGLE_STR = str(triangle)
                 TRIANGLE_STR = TRIANGLE_STR[1:-1]
-                file.write(TRIANGLE_STR + "\n")
+
+                # Append the triangle string only if it's unique
+                if TRIANGLE_STR not in unique_triangles:
+                    file.write(TRIANGLE_STR + "\n")
+                    unique_triangles.add(TRIANGLE_STR)
+
+
+def build_chunk_map_into_many_files(chunks: list, filepath: str):
+    # Set to keep track of unique triangle strings
+
+    unique_triangles = set()
+    
+    max_n_chunks_per_file = 15
+
+    for idx, chunk in enumerate(chunks):
+        file_idx = divmod(idx, max_n_chunks_per_file)[0]
+
+        filename = filepath + '_' + generate_prefixed_zeros_str(4, file_idx) + ".txt"
+
+        with open(filename, "a") as file:
+            CENTRE_POINT_STR = str(chunk.centre_point)
+            
+            # Remove left and right square brackets
+            CENTRE_POINT_STR = "# " + CENTRE_POINT_STR[1:-1]
+            file.write(CENTRE_POINT_STR + "\n")
+
+            for triangle in chunk.triangles:
+                TRIANGLE_STR = str(triangle)
+                TRIANGLE_STR = TRIANGLE_STR[1:-1]
+
+                # Append the triangle string only if it's unique
+                if TRIANGLE_STR not in unique_triangles:
+                    file.write(TRIANGLE_STR + "\n")
+                    unique_triangles.add(TRIANGLE_STR)
 
 def reindex_lookup():
     pass

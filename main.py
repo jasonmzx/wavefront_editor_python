@@ -51,11 +51,14 @@ def load_chunks_into_pv(chunks, verts):
     plotter.show()
 
 
-chunks, verts = obj_chunker.get_XZ_chunked_mesh("objects/DE_AZTEC.obj", 5)
+chunks, verts = obj_chunker.get_XZ_chunked_mesh("objects/Square_island.obj", 60)
 
 # file_builder.serialize_chunk_map_to_file(chunks, verts, "chunk_map.txt")
 
-load_chunks_into_pv(chunks, verts)
+#check for empty chunks
+chunks = [chunk for chunk in chunks if len(chunk.faces) > 0]
+
+#load_chunks_into_pv(chunks, verts)
 
 for chunk in chunks:
     print('\n')
@@ -63,7 +66,9 @@ for chunk in chunks:
     print("N# Faces: ", len(chunk.faces))
     print("N# Triangles: ", len(chunk.triangles))
 
-file_builder.build_full_chunk_map(chunks, "full_chunk_map.txt")
+#file_builder.build_full_chunk_map(chunks, "Small_map.txt")
+
+file_builder.build_chunk_map_into_many_files(chunks, "chunks/chunk")
 
 #* -- Monotilhic Mesh (No Chunks at all) 
 
